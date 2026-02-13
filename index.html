@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Samosa Activity - Final</title>
+    <title>Activity Loading...</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap'); /* خط غامض للصفحة الاولى */
 
         :root {
             --gold: #d4af37;
@@ -20,35 +21,42 @@
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Cairo', sans-serif;
-            background-color: #ffffff;
-            color: var(--dark);
+            font-family: 'Courier Prime', monospace; /* الخط المبدئي */
+            background-color: #111111; /* بداية غامضة */
+            color: #eeeeee;
             height: 100vh;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: background-color 2s ease;
+            transition: background-color 1.5s ease, color 1s ease;
         }
 
-        body.game-active {
+        /* --- Theme Transformation Classes --- */
+        body.theme-revealed {
             background-color: var(--beige);
+            font-family: 'Cairo', sans-serif;
+            color: var(--dark);
         }
 
-        /* --- Decorations --- */
+        /* --- Decorations (Hidden Initially) --- */
         .deco {
             position: absolute;
-            top: 0;
+            top: -200px; /* مستخبية فوق */
             width: 200px;
             pointer-events: none;
             z-index: 10;
             opacity: 0;
-            transition: opacity 2s ease;
+            transition: top 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 1s ease;
         }
         .deco-left { left: 0; }
         .deco-right { right: 0; }
-        body.game-active .deco { opacity: 1; }
+        
+        body.theme-revealed .deco { 
+            opacity: 1; 
+            top: 0; /* تنزل وتظهر */
+        }
 
         /* --- Screens --- */
         .screen {
@@ -60,13 +68,46 @@
             height: 100%;
             position: absolute;
             top: 0; left: 0; z-index: 20;
-            animation: fadeIn 0.5s ease-in-out;
+            animation: fadeIn 0.8s ease-in-out;
         }
 
         .active-screen { display: flex; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* --- Buttons --- */
+        /* --- Intro Screen (Mystery) --- */
+        .mystery-title {
+            font-size: 1.5rem;
+            letter-spacing: 5px;
+            opacity: 0.7;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+        }
+        .btn-mystery {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+            padding: 15px 50px;
+            font-size: 1.2rem;
+            font-family: 'Courier Prime', monospace;
+            cursor: pointer;
+            transition: 0.3s;
+            letter-spacing: 2px;
+        }
+        .btn-mystery:hover {
+            background: white;
+            color: black;
+            box-shadow: 0 0 20px rgba(255,255,255,0.5);
+        }
+
+        /* --- Main UI Elements (Revealed Later) --- */
+        h1.main-title {
+            font-size: 4rem;
+            color: var(--gold);
+            margin-bottom: 10px;
+            font-family: 'Amiri', serif;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
         .btn-main {
             padding: 12px 40px; font-size: 1.3rem; background: var(--gold); color: white;
             border: none; border-radius: 50px; cursor: pointer;
@@ -75,7 +116,7 @@
         }
         .btn-main:hover { transform: scale(1.05); }
 
-        /* --- Rules Section (Enhanced) --- */
+        /* --- Rules Section --- */
         .rules-box {
             background: white; padding: 30px; border-radius: 20px; border: 3px solid var(--gold);
             text-align: center; max-width: 800px; width: 90%; max-height: 85vh; overflow-y: auto;
@@ -118,7 +159,7 @@
         
         .score { font-size: 1.8rem; font-weight: bold; color: var(--gold); }
         .badges-area { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; margin-top: 5px;}
-        .badge { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; color: white; }
+        .badge { font-size: 0.75rem; padding: 3px 8px; border-radius: 4px; color: white; font-weight: bold; }
         .badge-combo { background: var(--green); }
         .badge-fail { background: var(--red); }
 
@@ -159,7 +200,6 @@
             display: flex; align-items: center; text-align: center; justify-content: center; font-weight: bold;
         }
         
-        /* Specific Card Colors */
         .punish-safe { background: var(--green) !important; border-color: white !important; }
         .punish-worst { background: var(--black) !important; border-color: var(--red) !important; color: var(--red) !important; }
         .punish-rival { background: var(--purple) !important; border-color: white !important; }
@@ -179,12 +219,14 @@
     <audio id="bg-music" loop><source src="ramadan.mp3" type="audio/mpeg"></audio>
 
     <div id="screen-intro" class="screen active-screen">
-        <button class="btn-main" onclick="startExperience()">Start Activity</button>
+        <div class="mystery-title">System Ready</div>
+        <button class="btn-mystery" onclick="revealTheme()">ENTER</button>
     </div>
 
     <div id="screen-rules" class="screen">
         <div class="rules-box">
-            <h1 style="color:var(--gold); margin:0;">Game Rules</h1>
+            <h1 class="main-title">Samosa Activity</h1>
+            <p style="color:#666; font-size: 1.2rem;">Ramadan Edition Rules</p>
             
             <button id="btn-show-rules" class="btn-main" style="display:none;" onclick="revealRulesContent()">Show Rules</button>
 
@@ -215,24 +257,24 @@
                 </table>
 
                 <div class="combo-box">
-                    <h3 style="margin-top:0; color:var(--green);">🔥 Positive Combo (Winning Streak)</h3>
+                    <h3 style="margin-top:0; color:var(--green);">Positive Combo (Winning Streak)</h3>
                     <p>If you answer the <strong>SAME category</strong> correctly twice in a row, points are DOUBLED!</p>
-                    <p><em>Example: Meat (+2) ➔ Next Meat (+4)</em></p>
+                    <p><em>Example: Meat (+2) -> Next Meat (+4)</em></p>
                 </div>
 
                 <div class="combo-box" style="border-color:var(--red);">
-                    <h3 style="margin-top:0; color:var(--red);">💀 Negative Combo (Losing Streak)</h3>
+                    <h3 style="margin-top:0; color:var(--red);">Negative Combo (Losing Streak)</h3>
                     <p>If you answer WRONG twice in a row, the penalty multiplies!</p>
-                    <p><em>Example: Cheese (-1) ➔ Next Wrong (-2) ➔ Next Wrong (-3)...</em></p>
+                    <p><em>Example: Cheese (-1) -> Next Wrong (-2) -> Next Wrong (-3)...</em></p>
                 </div>
 
                 <h3>3. Punishment Cards (7 Cards)</h3>
-                <p style="font-size:0.9rem; margin-bottom:20px;">
+                <p style="font-size:0.9rem; margin-bottom:20px; line-height: 1.6;">
                     When you fail Spinach, pick a card:<br>
-                    ⚫ <strong>Black:</strong> The Black Hole (-5 Pts)<br>
-                    🔴 <strong>Red:</strong> Divide Score / Give Points<br>
-                    🟣 <strong>Purple:</strong> Rival chooses for you<br>
-                    🟢 <strong>Green:</strong> Safe (-2 Pts only)
+                    <span style="color:var(--black); font-weight:bold;">[Black]</span> The Black Hole (-5 Pts)<br>
+                    <span style="color:var(--red); font-weight:bold;">[Red]</span> Divide Score / Give Points<br>
+                    <span style="color:var(--purple); font-weight:bold;">[Purple]</span> Rival chooses for you<br>
+                    <span style="color:var(--green); font-weight:bold;">[Green]</span> Safe (-2 Pts only)
                 </p>
 
                 <button class="btn-main" onclick="goToSetup()">I Understand, Next</button>
@@ -352,9 +394,16 @@
             document.getElementById(id).classList.add('active-screen');
         }
 
-        function startExperience() {
-            document.body.classList.add('game-active');
-            audio.volume = 0.5; audio.play().catch(e => {});
+        // --- THE REVEAL FUNCTION ---
+        function revealTheme() {
+            // 1. Change Visuals
+            document.body.classList.add('theme-revealed');
+            
+            // 2. Play Audio
+            audio.volume = 0.5; 
+            audio.play().catch(e => console.log("Audio needs interaction"));
+            
+            // 3. Fade Out Music gradually after 20s
             setTimeout(() => {
                 let vol = 0.5;
                 let fade = setInterval(() => {
@@ -362,8 +411,12 @@
                     else { clearInterval(fade); audio.pause(); }
                 }, 500);
             }, 20000); 
+
+            // 4. Switch Screen
             switchScreen('screen-rules');
-            setTimeout(() => { document.getElementById('btn-show-rules').style.display = 'inline-block'; }, 3000);
+            
+            // 5. Show "Show Rules" button after delay
+            setTimeout(() => { document.getElementById('btn-show-rules').style.display = 'inline-block'; }, 2000);
         }
 
         function revealRulesContent() {
@@ -397,7 +450,7 @@
             teams.forEach((t, i) => {
                 let active = (i === state.tIdx) ? 'active-turn' : '';
                 
-                // Badges
+                // Badges (No Emoji)
                 let badges = '';
                 if(t.combo > 0) badges += `<div class="badge badge-combo">Combo x${t.combo+1}</div>`;
                 if(t.negCombo > 1) badges += `<div class="badge badge-fail">Loss Streak x${t.negCombo}</div>`;
@@ -599,7 +652,7 @@
             if(state.rIdx > conf.rounds) {
                 switchScreen('screen-end');
                 let sorted = [...teams].sort((a,b) => b.score - a.score);
-                document.getElementById('winner-text').innerText = `🏆 ${sorted[0].name} Wins!`;
+                document.getElementById('winner-text').innerText = `Winner: ${sorted[0].name}`;
                 let h = '';
                 sorted.forEach((t, i) => {
                     h += `<div style="background:white; padding:10px 20px; margin:10px; border-radius:10px; font-size:1.5rem; border-bottom:2px solid var(--gold); display:flex; justify-content:space-between; width:300px;"><span>#${i+1} ${t.name}</span><span>${Number.isInteger(t.score)?t.score:t.score.toFixed(1)}</span></div>`;
